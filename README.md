@@ -1,2 +1,2 @@
 # MagLev 2024 Coverage Paradox Notebook
-Demonstration for MagLev 2024
+Marimo notebook with a simple visualisation of the Coverage Paradox, produced for MagLev 2024 conference
