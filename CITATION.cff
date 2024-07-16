@@ -1,0 +1,26 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: MagLev 2024 Coverage Paradox Notebook
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Chris
+    family-names: Davis
+    email: cxd309@student.bham.ac.uk
+    affiliation: University of Birmingham
+    orcid: 'https://orcid.org/0009-0005-8378-5871'
+repository-code: >-
+  https://github.com/cxd309/MagLev-2024-Coverage-Paradox-Notebook
+abstract: >-
+  Marimo notebook with a simple visualisation of the
+  Coverage Paradox, produced for MagLev 2024 conference
+keywords:
+  - Transport
+  - Marimo
+  - Coverage Paradox
+  - MagLev
+license: GPL-3.0
