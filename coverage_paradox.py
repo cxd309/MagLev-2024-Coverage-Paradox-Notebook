@@ -22,7 +22,7 @@ def __(mo):
         start=2, 
         stop=100,
         step= 1,
-        value = 21,
+        value = 16,
         label="Total Journey Distance ($km$)"
     )
     tphph_ui = mo.ui.number(
@@ -34,16 +34,16 @@ def __(mo):
     )
     vehicle_line_speed_ui = mo.ui.number(
         start=10, 
-        stop=150,
+        stop=200,
         step= 5,
-        value = 80,
+        value = 90,
         label="Maximum Line Speed ($km/h$)"
     )
     vehicle_acceleration_ui = mo.ui.number(
         start=0.1, 
         stop=1.0,
         step=0.1,
-        value = 1,
+        value = 0.7,
         label="Acceleration ($m/s^2$)"
     )
     vehicle_deceleration_ui = mo.ui.number(
@@ -89,6 +89,19 @@ def __(mo):
 
 
 @app.cell
+def __(mo, seconds_to_minutes, sim):
+    optimum_result = sim.Find_Optimum_Result()
+
+    mo.md(f"""
+        ## Optimum Result \n
+        Number of Stations: {optimum_result.n_stations:0.0f} \n
+        Journey Time: {seconds_to_minutes(optimum_result.journey_time):0.1f} minutes \n
+        Interstation Distance: {optimum_result.is_distance:0.1f}m
+    """)
+    return optimum_result,
+
+
+@app.cell
 def __(mo):
     mo.md(r"## Plots")
     return
@@ -116,58 +129,25 @@ def __(
 
 
 @app.cell
-def __(Run_Tot_Simulation, sim):
-    sim_results = Run_Tot_Simulation(sim)
-    return sim_results,
-
-
-@app.cell
-def __(alt, mo, sim_results):
-    ## Plot for number of stations and timing
-    # reduce the df to a select number of columns (wide format)
-    n_stations_timing_wide_df = sim_results[["Number of Stations", "Vehicle Time (s)", "Access Time (s)", "Door-to-Door Journey Time (s)"]]
-
-    # melt to long form for altair
-    n_stations_timing_long_df = n_stations_timing_wide_df.melt("Number of Stations", var_name="Time Measure", value_name="Time (s)")
-
-    n_stations_timing_chart = mo.ui.altair_chart(alt.Chart(n_stations_timing_long_df).mark_line().encode(x="Number of Stations",y="Time (s)",color="Time Measure"))
-    return (
-        n_stations_timing_chart,
-        n_stations_timing_long_df,
-        n_stations_timing_wide_df,
-    )
-
-
-@app.cell
-def __(n_stations_timing_chart):
-    n_stations_timing_chart
+def __(sim):
+    sim.N_Stations_Journey_Time_Chart()
     return
 
 
 @app.cell
-def __(alt, mo, sim_results):
-    ## Plot for interstation distance and percentage of time in vehicle
-
-    is_distance_vehicle_percentage_chart = mo.ui.altair_chart(alt.Chart(sim_results).mark_line().encode(x="Interstation Distance (m)",y="Percentage Time In Vehicle"))
-    return is_distance_vehicle_percentage_chart,
-
-
-@app.cell
-def __(is_distance_vehicle_percentage_chart):
-    is_distance_vehicle_percentage_chart
+def __(sim):
+    sim.IS_Distance_Perc_Veh_Time_Chart()
     return
 
 
 @app.cell
-def __(sim_results):
-    sim_results
+def __(sim):
+    sim.to_df()
     return
 
 
 @app.cell
-def __(math):
-    ## Classes
-
+def __():
     class Vehicle:
         def __init__(self, line_speed_ui, acceleration_ui, deceleration_ui):
             # Vehicle Linespeed (m/s) -- convert from km/h
@@ -184,72 +164,168 @@ def __(math):
 
             self.acc_dcc_distance = self.acceleration_distance + self.deceleration_distance
             self.acc_dcc_time = self.acceleration_time + self.deceleration_time
+    return Vehicle,
 
+
+@app.cell
+def __():
     class Operations:
         def __init__(self, tphph_ui, dwell_time_ui):
             # Vehicle Headway (s) -- convert from trains per hour per direction
             self.headway = 3600 / tphph_ui.value
             # Dwell Time (s) -- convert from minutes
             self.dwell_time = dwell_time_ui.value * 60
+    return Operations,
 
+
+@app.cell
+def __():
     class Journey:
         def __init__(self, journey_distance_ui, walking_speed_ui):
             # Journey Distance (m) -- convert from km
             self.journey_distance = journey_distance_ui.value * 1000
             # Walking Speed (m/s) -- convert from km/h
             self.walking_speed = walking_speed_ui.value * (1000/3600)
+    return Journey,
 
+
+@app.cell
+def __():
+    class Individual_Simulation:
+        def __init__(self, n_stations, is_distance, vehicle_time, access_time, waiting_time):
+            self.n_stations = n_stations
+            self.is_distance = is_distance
+            self.vehicle_time = vehicle_time
+            self.access_time = access_time
+            self.waiting_time = waiting_time
+
+            self.journey_time = vehicle_time + 2*access_time + waiting_time
+
+            self.perc_time_in_vehicle = 100 * vehicle_time / self.journey_time
+            
+        def to_dict(self):
+            return {
+                "Number of Stations": self.n_stations,
+                "Interstation Distance (m)": self.is_distance,
+                "Vehicle Time (s)": self.vehicle_time,
+                "Access Time (s)": self.access_time,
+                "Waiting Time (s)": self.waiting_time,
+                "Door-to-Door Journey Time (s)": self.journey_time,
+                "Percentage Time In Vehicle": self.perc_time_in_vehicle
+            }
+    return Individual_Simulation,
+
+
+@app.cell
+def __():
+    def seconds_to_minutes(time_seconds):
+        return time_seconds / 60
+    return seconds_to_minutes,
+
+
+@app.cell
+def __(Individual_Simulation, alt, math, mo, pd, seconds_to_minutes):
     class Simulation:
         def __init__(self, veh, ops, jny):
             self.jny = jny
             self.veh = veh
             self.ops = ops
 
+            self.simulation_results = []
+
+            self.Run_Simulation()
+
+        def to_df(self):
+            temp_array = []
+            for ind_sim in self.simulation_results:
+                temp_array.append(ind_sim.to_dict())
+
+            return pd.DataFrame.from_dict(temp_array) 
+            
+        def Run_Individual_Simulation(self, n_stations):
+            # Distance between stations
+            is_distance = self.jny.journey_distance/n_stations-0.5
+            
+            # Time travelling at line speed
+            line_speed_time = (is_distance-self.veh.acc_dcc_distance)/self.veh.line_speed
+            
+            # Time travelling between stations
+            is_time = self.veh.acc_dcc_time + line_speed_time
+        
+            # Total time in vehicle
+            vehicle_time = is_time*(n_stations-1) + self.ops.dwell_time*(n_stations-2)
+        
+            # Access Distance (walking) at each end
+            access_distance = is_distance / 4
+            # Access time
+            access_time = access_distance / self.jny.walking_speed
+        
+            # Waiting Time to board vehicle
+            waiting_time = self.ops.headway / 2
+
+            ind_result = Individual_Simulation(n_stations, is_distance, vehicle_time, access_time, waiting_time)
+
+            self.simulation_results.append(ind_result)
+
+        def Run_Simulation(self):
             # Find the limit for the number of stations
             # reached when the vehicle cannot accelerate and declerate in the interstation distance
-            self.max_stations = math.ceil((self.jny.journey_distance/(self.veh.acc_dcc_distance)) + 0.5)
-    return Journey, Operations, Simulation, Vehicle
+            max_stations = math.ceil((self.jny.journey_distance/(self.veh.acc_dcc_distance)) + 0.5)
+            
+            for n_stations in range(2, max_stations):
+                self.Run_Individual_Simulation(n_stations)
+
+        def Find_Optimum_Result(self):
+            optimum_result = self.simulation_results[0]
+            
+            for ind_sim in self.simulation_results:
+                if ind_sim.journey_time<=optimum_result.journey_time:
+                    optimum_result = ind_sim
+
+            return optimum_result
+
+        def N_Stations_Journey_Time_Chart(self):
+            # Get a wide DF
+            wide_df = self.to_df()[["Number of Stations", "Vehicle Time (s)", "Access Time (s)", "Door-to-Door Journey Time (s)", "Waiting Time (s)"]]
+            
+
+            # melt to long form for altair
+            long_df = wide_df.melt("Number of Stations", var_name="Time Measure", value_name="Time (mins)")
+            long_df["Time (mins)"] = long_df["Time (mins)"].apply(seconds_to_minutes)
+
+            chart = mo.ui.altair_chart(
+                alt.Chart(long_df).mark_line().encode(
+                    x="Number of Stations",
+                    y="Time (mins)",
+                    color="Time Measure"
+                )
+            )
+            return chart
+
+        def IS_Distance_Perc_Veh_Time_Chart(self):
+            ## Plot for interstation distance and percentage of time in vehicle
+
+            chart = mo.ui.altair_chart(
+                alt.Chart(self.to_df()).mark_line().encode(
+                    x="Interstation Distance (m)",
+                    y="Percentage Time In Vehicle"
+                )
+            )
+
+            return chart
+    return Simulation,
 
 
 @app.cell
-def __(jny, ops, pd):
-    ## Simulation Functions
+def __(mo):
+    mo.md(
+        r"""
+        ## Explanation and Assumptions
 
-    def Run_Tot_Simulation(sim):
-        total_results = []
-        for n_stations in range(2, sim.max_stations):
-            total_results.append(Run_Ind_Simulation(sim, n_stations))
-
-        return pd.DataFrame.from_dict(total_results) 
-
-    def Run_Ind_Simulation(sim, n_stations):
-        # Distance between stations
-        is_distance = sim.jny.journey_distance/(n_stations-0.5)
-        # Time travelling at line speed
-        line_speed_time = (is_distance-sim.veh.acc_dcc_distance)/sim.veh.line_speed
-        # Time travelling between stations
-        is_time = sim.veh.acc_dcc_time + line_speed_time
-
-        # Total time in vehicle
-        vehicle_time = is_time*(n_stations-1) + sim.ops.dwell_time*(n_stations-2)
-
-        # Access Distance (walking) at each end
-        access_distance = is_distance / 4
-        # total access time (both ends)
-        access_time = 2*(access_distance / jny.walking_speed)
-
-        # Door to door journey time
-        journey_time = vehicle_time + access_time + ops.headway/2
-
-        return {
-            "Number of Stations": n_stations,
-            "Interstation Distance (m)": is_distance,
-            "Vehicle Time (s)": vehicle_time,
-            "Access Time (s)": access_time,
-            "Door-to-Door Journey Time (s)": journey_time,
-            "Percentage Time In Vehicle": 100 * vehicle_time / journey_time
-        }
-    return Run_Ind_Simulation, Run_Tot_Simulation
+        TO-DO
+        """
+    )
+    return
 
 
 @app.cell
