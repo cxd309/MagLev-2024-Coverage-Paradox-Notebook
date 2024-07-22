@@ -21,50 +21,50 @@ def __(mo):
     journey_distance_ui = mo.ui.number(
         start=2, 
         stop=100,
-        step= 1,
-        value = 16,
+        step= 0.1,
+        value = 13.7,
         label="Total Journey Distance ($km$)"
     )
     tphph_ui = mo.ui.number(
         start=1, 
-        stop=30,
+        stop=40,
         step=1,
-        value = 6,
+        value = 30,
         label="Trains Per Hour Per Direction"#
     )
     vehicle_line_speed_ui = mo.ui.number(
         start=10, 
         stop=200,
-        step= 5,
+        step= 1,
         value = 90,
         label="Maximum Line Speed ($km/h$)"
     )
     vehicle_acceleration_ui = mo.ui.number(
         start=0.1, 
-        stop=1.0,
+        stop=2.0,
         step=0.1,
-        value = 0.7,
-        label="Acceleration ($m/s^2$)"
+        value = 1.3,
+        label="Mean Acceleration ($m/s^2$)"
     )
     vehicle_deceleration_ui = mo.ui.number(
         start=0.1, 
-        stop=1.0, 
+        stop=2.0, 
         step=0.1,
-        value=0.7,
-        label="Deceleration($m/s^2$)"
+        value=1.2,
+        label="Mean Deceleration($m/s^2$)"
     )
     dwell_time_ui = mo.ui.number(
-        start=0.5, 
+        start=0.2, 
         stop=10.0, 
-        step=0.5,
-        value=3,
+        step=0.1,
+        value=1.5,
         label="Dwell Time per Station ($mins$)"
     )
     walking_speed_ui = mo.ui.number(
-        start=3, 
-        stop=6, 
-        step=0.5,
-        value=5,
+        start=1, 
+        stop=7, 
+        step=0.1,
+        value=4.7,
         label="Average Walking Pace ($km/h$)"
     )
 
@@ -202,7 +202,7 @@ def __():
             self.journey_time = vehicle_time + 2*access_time + waiting_time
 
             self.perc_time_in_vehicle = 100 * vehicle_time / self.journey_time
-            
+
         def to_dict(self):
             return {
                 "Number of Stations": self.n_stations,
@@ -241,25 +241,25 @@ def __(Individual_Simulation, alt, math, mo, pd, seconds_to_minutes):
                 temp_array.append(ind_sim.to_dict())
 
             return pd.DataFrame.from_dict(temp_array) 
-            
+
         def Run_Individual_Simulation(self, n_stations):
             # Distance between stations
             is_distance = self.jny.journey_distance/n_stations-0.5
-            
+
             # Time travelling at line speed
             line_speed_time = (is_distance-self.veh.acc_dcc_distance)/self.veh.line_speed
-            
+
             # Time travelling between stations
             is_time = self.veh.acc_dcc_time + line_speed_time
-        
+
             # Total time in vehicle
             vehicle_time = is_time*(n_stations-1) + self.ops.dwell_time*(n_stations-2)
-        
+
             # Access Distance (walking) at each end
             access_distance = is_distance / 4
             # Access time
             access_time = access_distance / self.jny.walking_speed
-        
+
             # Waiting Time to board vehicle
             waiting_time = self.ops.headway / 2
 
@@ -271,13 +271,13 @@ def __(Individual_Simulation, alt, math, mo, pd, seconds_to_minutes):
             # Find the limit for the number of stations
             # reached when the vehicle cannot accelerate and declerate in the interstation distance
             max_stations = math.ceil((self.jny.journey_distance/(self.veh.acc_dcc_distance)) + 0.5)
-            
+
             for n_stations in range(2, max_stations):
                 self.Run_Individual_Simulation(n_stations)
 
         def Find_Optimum_Result(self):
             optimum_result = self.simulation_results[0]
-            
+
             for ind_sim in self.simulation_results:
                 if ind_sim.journey_time<=optimum_result.journey_time:
                     optimum_result = ind_sim
@@ -287,7 +287,7 @@ def __(Individual_Simulation, alt, math, mo, pd, seconds_to_minutes):
         def N_Stations_Journey_Time_Chart(self):
             # Get a wide DF
             wide_df = self.to_df()[["Number of Stations", "Vehicle Time (s)", "Access Time (s)", "Door-to-Door Journey Time (s)", "Waiting Time (s)"]]
-            
+
 
             # melt to long form for altair
             long_df = wide_df.melt("Number of Stations", var_name="Time Measure", value_name="Time (mins)")
