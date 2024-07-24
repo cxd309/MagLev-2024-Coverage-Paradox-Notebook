@@ -6,7 +6,15 @@ app = marimo.App()
 
 @app.cell
 def __(mo):
-    mo.md(r"# MagLev 2024 - Coverage Paradox")
+    mo.md(
+        r"""
+        # MagLev 2024 - Coverage Paradox
+
+        The purpose of this script is to illustrate the coverage paradox with an interactive notebook where users can change the parameters of a rail system and see how it has an impact on the door-to-door journey time showing the behaviour of the coverage paradox.
+
+        For further details see `README.md`
+        """
+    )
     return
 
 
@@ -94,9 +102,10 @@ def __(mo, seconds_to_minutes, sim):
 
     mo.md(f"""
         ## Optimum Result \n
-        Number of Stations: {optimum_result.n_stations:0.0f} \n
-        Journey Time: {seconds_to_minutes(optimum_result.journey_time):0.1f} minutes \n
-        Interstation Distance: {optimum_result.is_distance:0.1f}m
+        The number of stations / interstation distance with the minimum Door-to-Door journey time \n
+        **Number of Stations**: {optimum_result.n_stations:0.0f} \n
+        **Journey Time**: {seconds_to_minutes(optimum_result.journey_time):0.1f} minutes \n
+        **Interstation Distance**: {optimum_result.is_distance:0.1f}m
     """)
     return optimum_result,
 
@@ -298,7 +307,7 @@ def __(Individual_Simulation, alt, math, mo, pd, seconds_to_minutes):
                     x="Number of Stations",
                     y="Time (mins)",
                     color="Time Measure"
-                )
+                ).properties(title="Number of stations and duration of journey components")
             )
             return chart
 
@@ -309,23 +318,11 @@ def __(Individual_Simulation, alt, math, mo, pd, seconds_to_minutes):
                 alt.Chart(self.to_df()).mark_line().encode(
                     x="Interstation Distance (m)",
                     y="Percentage Time In Vehicle"
-                )
+                ).properties(title="Interstation distance and percentage of door-to-door journey time spent in vehicle")
             )
 
             return chart
     return Simulation,
-
-
-@app.cell
-def __(mo):
-    mo.md(
-        r"""
-        ## Explanation and Assumptions
-
-        TO-DO
-        """
-    )
-    return
 
 
 @app.cell
