@@ -75,7 +75,7 @@ The variable parameters are:
 * $V_{walk}$ **Average walking speed** ($km/h$), average speed for passenger walking
 
 ### Calculations
-The Variable Input Parameters are then taken and put into 3 classes which convert the input units to SI. The $tphph$ is also converated into a headway between vehicles. The three classes and their attributes are:
+The Variable Input Parameters are then taken and put into 3 classes which convert the input units to SI. The $tphph$ is also converated into a headway ($T_{hw}$) between vehicles. The three classes and their attributes are:
 * `Vehicle` (`line_speed`, `acceleration`, `deceleration`)
     * The time and distance taken to accelerate and decelerate to line speed are also calculated and recorded as attributes of the class (`acc_dcc_distance`, `acc_dcc_time`)
 * `Operations` (`headway`, `dwell_time`)
@@ -93,7 +93,7 @@ $T_v = T_{is}(N_{stations}-1) + T_{dwell}(N_{stations}-2)$
 
 $T_a = \frac{S_{is}/4}{V_{walk}}$
 
-$T_{w} = \frac{hw}{2}$
+$T_{w} = \frac{T_{hw}}{2}$
 
 Where:
 * $N_{stations} **Number of stations**
@@ -101,7 +101,7 @@ Where:
 * $T_{is}$ **intersation time**, time taken for vehicle to travel between each station
 * $S_{acc-dcc}$ **acceleration deceleration distance**, distance taken to accelerate and decelerate from $V_{v-max}$
 * $T_{acc-dcc}$ **acceleration deceleration time**, time taken to accelerate and decelerate from $V_{v-max}$
-* $hw$ **vehicle headway**
+* $T_{hw}$ **vehicle headway**
 
 There is a function of the class `Simulation` that converts `simulation_results` from a list of instances of `Individual_Simulation` to a pandas dataframe.
 
