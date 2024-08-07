@@ -8,7 +8,7 @@
 
 This notebook was produced in support of a paper written for the [MagLev 2024 Conference](https://mkon.nu/maglev_2024) titled *"The Potential of Dynamic Skip-stop to Address the Coverage Paradox in Urban Transport through Superconducting MagLev Rail Technology"*
 
-A key section of the paper is describing the Coverage Paradox, a phenomena of urban rail transport systems due to the structure of the system concept. This is presented in a paper by Blumenfeld et. al. [1]. 
+A key section of the paper is describing the Coverage Paradox, a phenomenon of urban rail transport systems due to the structure of the system concept. This is presented in a paper by Blumenfeld et. al. [1]. 
 
 The purpose of this script is to illustrate the coverage paradox with an interactive notebook where users can change the parameters of a rail system and see how it has an impact on the door-to-door journey time showing the behaviour of the coverage paradox.
 
@@ -38,8 +38,8 @@ With the notebook running, there are 3 sections:
 **Variables**
 The 7 parameters that the users can adjust.
 
-**Optimum Result**
-The number of stations / interstation distance that gives the minimum Door-to-Door journey time ($T_j$)
+**Optimum Door-to-door Journey Time**
+The number of stations and interstation distance that result in the minimum average door-to-door journey time ($T_j$).
 
 **Plots**
 Altair plots for:
@@ -59,7 +59,7 @@ The overall formula is:
 $T_j = 2T_a + T_w + T_v$
 
 Where:
-* $T_j$ **Door-to-door journey time**, the total time to travel from origin to destination.
+* $T_j$ **Average door-to-door journey time**, the average total time to travel from origin to destination.
 * $T_a$ **Access time**, the time spend walking to or from the transit vehicle.
 * $T_w$ **Wait time**, the time elapsed between arriving at the transit vehicle and it departing on the journey.
 * $T_v$ **Vehicle time**, the time spent travelling in the transit vehicle.
@@ -67,7 +67,7 @@ Where:
 ### Variable Input Parameters
 The variable parameters are:
 * $S_j$ **Door-to-door journey distance** ($km$), the total distance to be travelled 
-* $tphph$ **Trains per hour per direction**
+* $tphpd$ **Trains per hour per direction**
 * $V_{v-max}$ **Maximum Line Speed** ($m/s$), maximum speed of vehicle 
 * $A_{v-acc}$ **Mean Acceleration** ($m/s^2$), the rate of acceleration of the vehicle from stationary to $V_{v-max}$ 
 * $A_{v-dcc}$ **Mean Deceleration** ($m/s^2$), the rate of deceleration of the vehicle from $V_{v-max}$ to stationary 
@@ -75,7 +75,7 @@ The variable parameters are:
 * $V_{walk}$ **Average walking speed** ($km/h$), average speed for passenger walking
 
 ### Calculations
-The Variable Input Parameters are then taken and put into 3 classes which convert the input units to SI. The $tphph$ is also converated into a headway ($T_{hw}$) between vehicles. The three classes and their attributes are:
+The Variable Input Parameters are then taken and put into 3 classes which convert the input units to SI. The $tphpd$ is also converated into a headway ($T_{hw}$) between vehicles. The three classes and their attributes are:
 * `Vehicle` (`line_speed`, `acceleration`, `deceleration`)
     * The time and distance taken to accelerate and decelerate to line speed are also calculated and recorded as attributes of the class (`acc_dcc_distance`, `acc_dcc_time`)
 * `Operations` (`headway`, `dwell_time`)
@@ -96,7 +96,7 @@ $T_a = \frac{S_{is}/4}{V_{walk}}$
 $T_{w} = \frac{T_{hw}}{2}$
 
 Where:
-* $N_{stations} **Number of stations**
+* $N_{stations}$ **Number of stations**
 * $S_{is}$ **interstation distance**, distance between each station
 * $T_{is}$ **intersation time**, time taken for vehicle to travel between each station
 * $S_{acc-dcc}$ **acceleration deceleration distance**, distance taken to accelerate and decelerate from $V_{v-max}$
@@ -115,9 +115,9 @@ The average walking pace of 4.7km/h is taken from a meta-anaysis paper [3].
 The other parameters are taken from a specification released by Siemens for a fleet of trains produced for the Munich metro [4].
 
 ### Assumptions
-For this demonstration it is fundementally assumed that the journey exists in 2 dimensional space.
+For this demonstration it is fundementally assumed that the journey exists in 1-dimensional space.
 
-It is also assumed that the population distribution is constant and from this the interstation distance is constant along the line. From this it is also derrived that the average distance for any user's origin and destination from a station is a quarter of the interstation distance.
+It is assumed that the population distribution is homogeneous and therefore the interstation distance is constant along the line. From this it is also derrived that the average distance for any user's origin and destination from a station is a quarter of the interstation distance.
 
 There is no account taken of time taken to walk from the station enterance to the platform or impact of crowds at peak times. This would normally add some time and would include time to scan tickets and other station activities.
 
