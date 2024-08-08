@@ -33,7 +33,7 @@ def __(mo):
         value = 13.7,
         label="Total Journey Distance ($km$)"
     )
-    tphph_ui = mo.ui.number(
+    tphpd_ui = mo.ui.number(
         start=1, 
         stop=40,
         step=1,
@@ -78,7 +78,7 @@ def __(mo):
 
     [
         journey_distance_ui, 
-        tphph_ui, 
+        tphpd_ui, 
         vehicle_line_speed_ui, 
         vehicle_acceleration_ui, 
         vehicle_deceleration_ui, 
@@ -88,12 +88,27 @@ def __(mo):
     return (
         dwell_time_ui,
         journey_distance_ui,
-        tphph_ui,
+        tphpd_ui,
         vehicle_acceleration_ui,
         vehicle_deceleration_ui,
         vehicle_line_speed_ui,
         walking_speed_ui,
     )
+
+
+@app.cell
+def __(dwell_time_ui, tphpd_ui):
+    ## Check if the dwell time is greater than would be possible with the tphpd
+    warning_text = ""
+    if (60/dwell_time_ui.value) < tphpd_ui.value:
+        warning_text = f"""<span style="color:red">WARNING! The Trains Per Hour Per Direction is greater than possible with the Dwell Time per Station</span>"""
+    return warning_text,
+
+
+@app.cell
+def __(mo, warning_text):
+    mo.md(warning_text)
+    return
 
 
 @app.cell
@@ -108,7 +123,7 @@ def __(mo):
     * $T_{dwell}$ **Dwell Time** ($mins$), the time spent stationary dwelling at each station 
     * $V_{walk}$ **Average walking speed** ($km/h$), average speed for passenger walking
         """,
-        
+
         "**Source of Default Values**":"""
     The National Travel Survey gave commuting figures for London of an average number of trips per year of 126 and the average distance travelled per year at 1,074 miles [1]. This gives an average commuting distance of 13.7km per commuting trip.
 
@@ -125,7 +140,7 @@ def __(mo):
 
     "**Explanation of Calculations**": """    
     The Variable Input Parameters are then taken and put into 3 classes which convert the input units to SI. The $tphpd$ is also converated into a headway ($T_{hw}$) between vehicles. The three classes and their attributes are:
-        
+
     * `Vehicle` (`line_speed`, `acceleration`, `deceleration`)
         * The time and distance taken to accelerate and decelerate to line speed are also calculated and recorded as attributes of the class (`acc_dcc_distance`, `acc_dcc_time`)
     * `Operations` (`headway`, `dwell_time`)
@@ -158,7 +173,7 @@ def __(mo):
 
     There are also functions of the class `Simulation` that produce the altair charts used in the notebook
         """,
-        
+
         "**Assumptions**":"""
     For this demonstration it is fundementally assumed that the journey exists in 1-dimensional space.
 
@@ -206,14 +221,14 @@ def __(
     Vehicle,
     dwell_time_ui,
     journey_distance_ui,
-    tphph_ui,
+    tphpd_ui,
     vehicle_acceleration_ui,
     vehicle_deceleration_ui,
     vehicle_line_speed_ui,
     walking_speed_ui,
 ):
     veh = Vehicle(vehicle_line_speed_ui, vehicle_acceleration_ui, vehicle_deceleration_ui)
-    ops = Operations(tphph_ui, dwell_time_ui)
+    ops = Operations(tphpd_ui, dwell_time_ui)
     jny = Journey(journey_distance_ui, walking_speed_ui)
     sim = Simulation(veh, ops, jny)
     return jny, ops, sim, veh
@@ -261,9 +276,9 @@ def __():
 @app.cell
 def __():
     class Operations:
-        def __init__(self, tphph_ui, dwell_time_ui):
+        def __init__(self, tphpd_ui, dwell_time_ui):
             # Vehicle Headway (s) -- convert from trains per hour per direction
-            self.headway = 3600 / tphph_ui.value
+            self.headway = 3600 / tphpd_ui.value
             # Dwell Time (s) -- convert from minutes
             self.dwell_time = dwell_time_ui.value * 60
     return Operations,
