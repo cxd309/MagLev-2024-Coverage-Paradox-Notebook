@@ -1,7 +1,7 @@
 import marimo
 
 __generated_with = "0.7.0"
-app = marimo.App()
+app = marimo.App(width="medium")
 
 
 @app.cell
@@ -16,84 +16,6 @@ def __(mo):
         """
     )
     return
-
-
-@app.cell
-def __(mo):
-    mo.md(r"## Variables")
-    return
-
-
-@app.cell
-def __(mo):
-    journey_distance_ui = mo.ui.number(
-        start=2, 
-        stop=100,
-        step= 0.1,
-        value = 13.7,
-        label="Total Journey Distance ($km$)"
-    )
-    tphpd_ui = mo.ui.number(
-        start=1, 
-        stop=40,
-        step=1,
-        value = 30,
-        label="Trains Per Hour Per Direction"#
-    )
-    vehicle_line_speed_ui = mo.ui.number(
-        start=10, 
-        stop=200,
-        step= 1,
-        value = 90,
-        label="Maximum Line Speed ($km/h$)"
-    )
-    vehicle_acceleration_ui = mo.ui.number(
-        start=0.1, 
-        stop=2.0,
-        step=0.1,
-        value = 1.3,
-        label="Mean Acceleration ($m/s^2$)"
-    )
-    vehicle_deceleration_ui = mo.ui.number(
-        start=0.1, 
-        stop=2.0, 
-        step=0.1,
-        value=1.2,
-        label="Mean Deceleration($m/s^2$)"
-    )
-    dwell_time_ui = mo.ui.number(
-        start=0.2, 
-        stop=10.0, 
-        step=0.1,
-        value=1.5,
-        label="Dwell Time per Station ($mins$)"
-    )
-    walking_speed_ui = mo.ui.number(
-        start=1, 
-        stop=7, 
-        step=0.1,
-        value=4.7,
-        label="Average Walking Pace ($km/h$)"
-    )
-
-    [
-        journey_distance_ui, 
-        tphpd_ui, 
-        vehicle_line_speed_ui, 
-        vehicle_acceleration_ui, 
-        vehicle_deceleration_ui, 
-        dwell_time_ui,
-        walking_speed_ui
-    ]
-    return (
-        dwell_time_ui,
-        journey_distance_ui,
-        tphpd_ui,
-        vehicle_acceleration_ui,
-        vehicle_deceleration_ui,
-        vehicle_line_speed_ui,
-        walking_speed_ui,
-    )
 
 
 @app.cell
@@ -205,6 +127,84 @@ def __(mo, seconds_to_minutes, sim):
         **Interstation Distance**: {optimum_result.is_distance/1000:0.2f}km
     """)
     return optimum_result,
+
+
+@app.cell
+def __(mo):
+    mo.md(r"## Variables")
+    return
+
+
+@app.cell
+def __(mo):
+    journey_distance_ui = mo.ui.number(
+        start=2, 
+        stop=100,
+        step= 0.1,
+        value = 13.7,
+        label="Total Journey Distance ($km$)"
+    )
+    tphpd_ui = mo.ui.number(
+        start=1, 
+        stop=40,
+        step=1,
+        value = 30,
+        label="Trains Per Hour Per Direction"#
+    )
+    vehicle_line_speed_ui = mo.ui.number(
+        start=10, 
+        stop=200,
+        step= 1,
+        value = 90,
+        label="Maximum Line Speed ($km/h$)"
+    )
+    vehicle_acceleration_ui = mo.ui.number(
+        start=0.1, 
+        stop=2.0,
+        step=0.1,
+        value = 1.3,
+        label="Mean Acceleration ($m/s^2$)"
+    )
+    vehicle_deceleration_ui = mo.ui.number(
+        start=0.1, 
+        stop=2.0, 
+        step=0.1,
+        value=1.2,
+        label="Mean Deceleration($m/s^2$)"
+    )
+    dwell_time_ui = mo.ui.number(
+        start=0.2, 
+        stop=10.0, 
+        step=0.1,
+        value=1.5,
+        label="Dwell Time per Station ($mins$)"
+    )
+    walking_speed_ui = mo.ui.number(
+        start=1, 
+        stop=7, 
+        step=0.1,
+        value=4.7,
+        label="Average Walking Pace ($km/h$)"
+    )
+
+    [
+        journey_distance_ui, 
+        tphpd_ui, 
+        vehicle_line_speed_ui, 
+        vehicle_acceleration_ui, 
+        vehicle_deceleration_ui, 
+        dwell_time_ui,
+        walking_speed_ui
+    ]
+    return (
+        dwell_time_ui,
+        journey_distance_ui,
+        tphpd_ui,
+        vehicle_acceleration_ui,
+        vehicle_deceleration_ui,
+        vehicle_line_speed_ui,
+        walking_speed_ui,
+    )
 
 
 @app.cell
