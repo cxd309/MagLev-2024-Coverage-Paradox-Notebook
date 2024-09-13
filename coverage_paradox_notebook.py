@@ -13,6 +13,12 @@ def __(mo):
         The purpose of this script is to illustrate the coverage paradox with an interactive notebook where users can change the parameters of a rail system and see how it has an impact on the door-to-door journey time showing the behaviour of the coverage paradox.
 
         For further details see `README.md`
+
+        Made by Chris Davis
+
+        [cxd309 <img style="float: left; width:24px; height:24px" src="https://github.com/favicon.ico" alt="github favicon">](https://github.com/cxd309/MagLev-2024-Coverage-Paradox-Notebook)
+
+        [0009-0005-8378-5871 <img style="float: left; width:24px; height:24px" src="https://orcid.filecamp.com/static/thumbs/2qiCR2ynFfVrWcJL-small.png" alt="orcid favicon">](https://orcid.org/0009-0005-8378-5871)
         """
     )
     return
